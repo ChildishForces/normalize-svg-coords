@@ -56,7 +56,6 @@ const parse = (path: string): Array<Array<string | number>> => {
   const matches = [...fixedWhitespace.matchAll(SEGMENT_REGEX)];
 
   for (const match of matches) {
-    console.log(match);
     let [command] = match.slice(1);
     const [args] = match.slice(2);
     let type = command.toLowerCase();

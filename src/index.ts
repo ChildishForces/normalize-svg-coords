@@ -1,8 +1,9 @@
-import parse from 'parse-svg-path';
 import { getPathInstruction, transformToInstructionConfig } from './instructions';
-import { normalizeCoord } from './plotting';
+import parse from './parse';
+import { createInterpolators } from './plotting';
 import { INormaliseConfig } from './types';
 import { getViewBoxTuple } from './utils';
+import getBoundingBox from "./bounds";
 
 // Normalize an SVG path to between a specified min and max.
 // Throws an error on invalid parameters.
@@ -13,26 +14,23 @@ const normalize = ({
   max = 1,
   precision = 4,
   asList,
+  maintainAspectRatio,
+  shouldCenter,
 }: INormaliseConfig) => {
   const bounds = getViewBoxTuple(path, viewBox);
-  const normalized = parse(path).map(([rawInstruction, ...remaining]) => {
-    const instruction = getPathInstruction(rawInstruction);
+  const {interpolateX, interpolateY} = createInterpolators(min, max, bounds, maintainAspectRatio);
 
-    // Transform into IR
-    const intermediates = transformToInstructionConfig(instruction, remaining);
+  const normalized = parse(path).map(([rawInstruction, ...remaining]) => {
+    const instruction = getPathInstruction(rawInstruction as string);
+    const intermediates = transformToInstructionConfig(instruction, remaining as string[]);
 
     // Normalize the values of each coordinate.
     const coords = intermediates.reduce<Array<string>>(
-      (processed, { value, skip, isHorizontal }) => {
+      (processed, {value, skip, isHorizontal}) => {
         if (skip) return [...processed, value];
-        const norm = normalizeCoord({
-          value,
-          min,
-          max,
-          bounds,
-          isHorizontal,
-        }).toFixed(precision);
-        return [...processed, norm];
+        const interpolator = isHorizontal ? interpolateX : interpolateY;
+        const normalised = interpolator(parseFloat(value));
+        return [...processed, String(Number(normalised.toFixed(precision)))];
       },
       [] as Array<string>
     );
@@ -42,7 +40,7 @@ const normalize = ({
     return `${rawInstruction}${coords.join(' ')}`;
   });
 
-  return asList ? normalized : normalized.join('');
-};
+  // TODO: Center logic
+}
 
 export default normalize;

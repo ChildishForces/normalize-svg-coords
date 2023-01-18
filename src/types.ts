@@ -18,7 +18,20 @@ export enum PathCommand {
   closePath,
 }
 
+export enum Dimension {
+  vertical,
+  horizontal,
+}
+
+export type RangeTuple = [number, number];
+
 export type ViewBoxTuple = [number, number, number, number];
+
+export interface IPathConfig {
+  value: string;
+  skip?: boolean;
+  isHorizontal?: boolean;
+}
 
 export interface INormaliseConfig {
   viewBox?: Record<'xmin' | 'xmax' | 'ymin' | 'ymax', number> | ViewBoxTuple | string;
@@ -27,10 +40,14 @@ export interface INormaliseConfig {
   max: number;
   precision?: number;
   asList?: boolean;
+  maintainAspectRatio?: boolean;
+  shouldCenter?: boolean;
 }
 
-export interface IPathConfig {
+export interface INormalizeCoordConfig {
   value: string;
-  skip?: boolean;
   isHorizontal?: boolean;
+  bounds: ViewBoxTuple;
+  min: number;
+  max: number;
 }
