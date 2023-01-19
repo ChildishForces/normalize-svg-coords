@@ -56,3 +56,13 @@ export const getViewBoxTuple = (
       throw Error('Unknown viewBox format');
   }
 };
+
+/**
+ * Rounds a value to the provided number of decimal places
+ * @param value
+ * @param precision
+ */
+export const roundToDecimalPlace = (value: number, precision: number) => {
+  const p = 10 ** precision;
+  return Math.round(value * p) / p;
+};

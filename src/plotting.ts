@@ -1,8 +1,12 @@
 import { Boundary, Dimension, RangeTuple, ViewBoxTuple } from './types';
 import { getLargestDimension } from './utils';
 
+/**
+ * Check if bounds are 1:1 aspect
+ * @param bounds {ViewBoxTuple}
+ */
 export const areBoundsIdentical = (bounds: ViewBoxTuple) => {
-  if (bounds[Boundary.xMin] !== bounds[Boundary.yMax]) return false;
+  if (bounds[Boundary.xMin] !== bounds[Boundary.yMin]) return false;
   return bounds[Boundary.xMax] === bounds[Boundary.yMax];
 };
 
@@ -18,39 +22,6 @@ export const interpolate = (inputRange: RangeTuple, outputRange: RangeTuple) => 
   const [minOutput, maxOutput] = outputRange;
   const slope = (maxOutput - minOutput) / (maxInput - minInput);
   return (x: number): number => minOutput + slope * (x - minInput);
-};
-
-/**
- * Scales the smallest dimension to be centered
- * @param min
- * @param max
- * @param bounds
- * @param dimension
- */
-export const interpolateWithAspect = (
-  min: number,
-  max: number,
-  bounds: ViewBoxTuple,
-  dimension: Dimension
-): ((value: number) => number) => {
-  const isHorizontal = dimension === Dimension.horizontal;
-
-  const xMin = bounds[Boundary.xMin];
-  const yMin = bounds[Boundary.yMin];
-
-  const pathWidth = bounds[Boundary.xMax] - xMin;
-  const pathHeight = bounds[Boundary.yMax] - yMin;
-
-  const outputWidth = max - min;
-  const outputHeight = max - min;
-
-  const scaleX = outputWidth / pathWidth;
-  const scaleY = outputHeight / pathHeight;
-
-  const scale = Math.min(scaleX, scaleY);
-
-  if (isHorizontal) return (value: number) => min + value * scale;
-  return (value: number) => min + value * scale;
 };
 
 /**
@@ -75,17 +46,9 @@ export const createInterpolators = (
       interpolateX: interpolate(xRange, outRange),
       interpolateY: interpolate(yRange, outRange),
     };
-  const largestDimension = getLargestDimension(bounds);
-  switch (largestDimension) {
-    case Dimension.horizontal:
-      return {
-        interpolateX: interpolate(xRange, outRange),
-        interpolateY: interpolateWithAspect(min, max, bounds, largestDimension),
-      };
-    case Dimension.vertical:
-      return {
-        interpolateX: interpolateWithAspect(min, max, bounds, largestDimension),
-        interpolateY: interpolate(yRange, outRange),
-      };
-  }
+  const isHorizontal = getLargestDimension(bounds) === Dimension.horizontal;
+  return {
+    interpolateX: interpolate(isHorizontal ? xRange : yRange, outRange),
+    interpolateY: interpolate(isHorizontal ? xRange : yRange, outRange),
+  };
 };

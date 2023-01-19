@@ -1,9 +1,8 @@
 import { getPathInstruction, transformToInstructionConfig } from './instructions';
 import parse from './parse';
 import { createInterpolators } from './plotting';
-import { INormaliseConfig } from './types';
-import { getViewBoxTuple } from './utils';
-import getBoundingBox from "./bounds";
+import { Boundary, Dimension, INormaliseConfig, ViewBoxTuple } from './types';
+import { getLargestDimension, getViewBoxTuple, roundToDecimalPlace } from './utils';
 
 // Normalize an SVG path to between a specified min and max.
 // Throws an error on invalid parameters.
@@ -15,10 +14,9 @@ const normalize = ({
   precision = 4,
   asList,
   maintainAspectRatio,
-  shouldCenter,
 }: INormaliseConfig) => {
   const bounds = getViewBoxTuple(path, viewBox);
-  const {interpolateX, interpolateY} = createInterpolators(min, max, bounds, maintainAspectRatio);
+  const { interpolateX, interpolateY } = createInterpolators(min, max, bounds, maintainAspectRatio);
 
   const normalized = parse(path).map(([rawInstruction, ...remaining]) => {
     const instruction = getPathInstruction(rawInstruction as string);
@@ -26,10 +24,10 @@ const normalize = ({
 
     // Normalize the values of each coordinate.
     const coords = intermediates.reduce<Array<string>>(
-      (processed, {value, skip, isHorizontal}) => {
+      (processed, { value, skip, isHorizontal }) => {
         if (skip) return [...processed, value];
         const interpolator = isHorizontal ? interpolateX : interpolateY;
-        const normalised = interpolator(parseFloat(value));
+        const normalised = interpolator(roundToDecimalPlace(parseFloat(value), 3));
         return [...processed, String(Number(normalised.toFixed(precision)))];
       },
       [] as Array<string>
@@ -41,6 +39,8 @@ const normalize = ({
   });
 
   // TODO: Center logic
-}
+  if (asList) return normalized;
+  return normalized.join(' ');
+};
 
 export default normalize;
