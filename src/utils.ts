@@ -9,6 +9,7 @@ import { Boundary, Dimension, INormaliseConfig, ViewBoxTuple } from './types';
  */
 export const extractViewBox = (viewBoxStr: string): ViewBoxTuple => {
   const parts = viewBoxStr.split(/\s*,\s*|\s+/);
+  if (parts.length < 4) throw Error('Invalid viewBox string length');
   return parts.map(parseFloat) as ViewBoxTuple;
 };
 

@@ -38,7 +38,6 @@ const normalize = ({
     return `${rawInstruction}${coords.join(' ')}`;
   });
 
-  // TODO: Center logic
   if (asList) return normalized;
   return normalized.join(' ');
 };
