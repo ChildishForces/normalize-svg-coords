@@ -9,7 +9,7 @@ describe('getBoundingBox', () => {
 
   it('should return the correct bounding box for a path with curves', () => {
     const path =
-      'M10 10 C20 10 30 20 40 20 S50 30 60 40 Q70 50 80 60 T90 70 100 80 A5 5 0 1 1 110 90';
+      'M10 10 C20 10 30 20 40 20 S50 30 60 40 Q70 50 80 60 T90 70 H75 V80 T100 80 A5 5 0 1 1 110 90 Z';
     const boundingBox = getBoundingBox(path);
     expect(boundingBox).toEqual({ minX: 10, minY: 10, maxX: 115, maxY: 95 });
   });

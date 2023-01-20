@@ -36,8 +36,8 @@ export interface IPathConfig {
 export interface INormaliseConfig {
   viewBox?: Record<'xmin' | 'xmax' | 'ymin' | 'ymax', number> | ViewBoxTuple | string;
   path: string;
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
   precision?: number;
   asList?: boolean;
   maintainAspectRatio?: boolean;
